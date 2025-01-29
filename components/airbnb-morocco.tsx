@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import TermsAndConditionsPopup from "./TermsAndConditionsPopup"
+import SignatureCanvas from "./signature-canvas"
 
 const guestSchema = z.object({
   fullName: z.string().min(2, { message: "Le nom complet doit comporter au moins 2 caractères" }),
@@ -67,17 +68,19 @@ export function AirbnbMoroccoForm2() {
             remove(i)
           }
         }
-
         const hasMoroccanFemale = currentGuests.some(
-          (guest) => guest.nationality === "Moroccan" && guest.sex === "female",
-        )
-        const hasMoroccanMale = currentGuests.some((guest) => guest.nationality === "Moroccan" && guest.sex === "male")
+          (guest) => guest?.nationality === "Moroccan" && guest?.sex === "female"
+        );
+        const hasMoroccanMale = currentGuests.some(
+          (guest) => guest?.nationality === "Moroccan" && guest?.sex === "male"
+        );
         const hasNonMoroccanFemale = currentGuests.some(
-          (guest) => guest.nationality !== "Moroccan" && guest.sex === "female",
-        )
+          (guest) => guest?.nationality !== "Moroccan" && guest?.sex === "female"
+        );
         const hasNonMoroccanMale = currentGuests.some(
-          (guest) => guest.nationality !== "Moroccan" && guest.sex === "male",
-        )
+          (guest) => guest?.nationality !== "Moroccan" && guest?.sex === "male"
+        );
+        
 
         setRequiresMarriageCertificate(
           (hasMoroccanFemale && hasMoroccanMale) ||
@@ -104,11 +107,12 @@ export function AirbnbMoroccoForm2() {
 
   return (
      <div
-      style={{
-        backgroundImage: "url('/images/6349232.jpg')",
-        backgroundSize: "cover", // Ensures the image covers the entire div
-        backgroundPosition: "center", // Centers the image
-      }}
+     style={{
+      backgroundImage: "url('/images/6349232.jpg')",
+      backgroundSize: "cover", // Ensures the image covers the entire div
+      backgroundPosition: "center", // Centers the image
+      backgroundAttachment: "fixed", // Keeps the background fixed while scrolling
+    }}
       className="min-h-screen p-8 h-full"
         >
       <Card className="max-w-6xl mx-auto bg-white/20  backdrop-blur-[14px] shadow-xl rounded-xl overflow-hidden border border-white/20">
@@ -314,6 +318,25 @@ export function AirbnbMoroccoForm2() {
                   </FormItem>
                 )}
               />   
+
+              <FormField
+                control={form.control}
+                name="signature"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-white">Signature</FormLabel>
+                    <FormControl>
+                      <SignatureCanvas
+                        onChange={(sig) => {
+                          setSignature(sig)
+                          field.onChange(sig)
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               
               <div className="flex items-center justify-center">

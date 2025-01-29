@@ -83,7 +83,7 @@ export default function SignatureCanvas({ onChange }: SignatureCanvasProps) {
       ref={canvasRef}
       width={canvasWidth}
       height={200}
-      className="border border-gray-300 rounded-md"
+      className="border border-gray-300 rounded-md sm:w-[95%] md:w-[50%] sm:h-[25vh] md:h-[30vh]"
     />
   )
 }
