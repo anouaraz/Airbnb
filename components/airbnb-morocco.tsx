@@ -34,7 +34,7 @@ const formSchema = z.object({
 export function AirbnbMoroccoForm2() {
   const [requiresMarriageCertificate, setRequiresMarriageCertificate] = useState(false)
   const [signature, setSignature] = useState("")
-  const [expandedGuests, setExpandedGuests] = useState<boolean>(false)
+  const [expandedGuests, setExpandedGuests] = useState<number[]>([])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,18 +69,17 @@ export function AirbnbMoroccoForm2() {
           }
         }
         const hasMoroccanFemale = currentGuests.some(
-          (guest) => guest?.nationality === "Moroccan" && guest?.sex === "female"
-        );
+          (guest) => guest?.nationality === "Moroccan" && guest?.sex === "female",
+        )
         const hasMoroccanMale = currentGuests.some(
-          (guest) => guest?.nationality === "Moroccan" && guest?.sex === "male"
-        );
+          (guest) => guest?.nationality === "Moroccan" && guest?.sex === "male",
+        )
         const hasNonMoroccanFemale = currentGuests.some(
-          (guest) => guest?.nationality !== "Moroccan" && guest?.sex === "female"
-        );
+          (guest) => guest?.nationality !== "Moroccan" && guest?.sex === "female",
+        )
         const hasNonMoroccanMale = currentGuests.some(
-          (guest) => guest?.nationality !== "Moroccan" && guest?.sex === "male"
-        );
-        
+          (guest) => guest?.nationality !== "Moroccan" && guest?.sex === "male",
+        )
 
         setRequiresMarriageCertificate(
           (hasMoroccanFemale && hasMoroccanMale) ||
@@ -93,29 +92,22 @@ export function AirbnbMoroccoForm2() {
     return () => subscription.unsubscribe()
   }, [form.watch, append, remove])
 
-  const toggleGuestExpansion = () => {
-    setExpandedGuests((prev) => !prev)
+  const toggleGuestExpansion = (index: number) => {
+    setExpandedGuests((prev) => 
+      prev.includes(index) ? [] : [index] // If clicked guest is already expanded, close it; else open it and close others
+    );
   }
+
+  const [isTermsPopupOpen, setIsTermsPopupOpen] = useState(false)
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values)
     // Here you would typically send the form data to your server
   }
 
-  const [isTermsPopupOpen, setIsTermsPopupOpen] = useState(false)
-
-
   return (
-     <div
-     style={{
-      backgroundImage: "url('/images/6349232.jpg')",
-      backgroundSize: "cover", // Ensures the image covers the entire div
-      backgroundPosition: "center", // Centers the image
-      backgroundAttachment: "fixed", // Keeps the background fixed while scrolling
-    }}
-      className="min-h-screen p-8 h-full"
-        >
-      <Card className="max-w-6xl mx-auto bg-white/20  backdrop-blur-[14px] shadow-xl rounded-xl overflow-hidden border border-white/20">
+    <div className="min-h-screen p-8 h-full">
+      <Card className="max-w-6xl mx-auto bg-white/20 backdrop-blur-[14px] shadow-xl rounded-xl border border-white/20">
         <CardContent className="p-8">
           <h1 className="text-xl md:text-4xl font-bold mb-6 text-center text-white font-moroccan">
             Location d&apos;Appartement au Maroc
@@ -134,7 +126,7 @@ export function AirbnbMoroccoForm2() {
                           <SelectValue placeholder="Sélectionnez le nombre d'invités" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-purple-800 text-white">
+                      <SelectContent className="bg-violet-950 text-white">
                         {[1, 2, 3, 4, 5, 6].map((num) => (
                           <SelectItem key={num} value={num.toString()}>
                             {num}
@@ -149,121 +141,121 @@ export function AirbnbMoroccoForm2() {
               <Separator className="my-8 bg-white/30" />
 
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-md md:text-lg font-semibold text-white mb-2 font-moroccan">Informations des invités</h3>
-                  {fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={toggleGuestExpansion}
-                      className="text-white hover:text-yellow-400 transition-colors"
-                    >
-                      {expandedGuests ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-                    </Button>
-                  )}
-                </div>
+                <h3 className="text-md md:text-lg font-semibold text-white mb-2 font-moroccan">
+                  Informations des invités
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {fields.map((field, index) => (
-                    <Card
+                    <FormField
                       key={field.id}
-                      className="bg-white/20 backdrop-blur-sm shadow-md rounded-lg overflow-hidden border border-white/30 flex flex-col"
-                    >
-                      <CardContent className="p-4 space-y-4">
-                        <h4 className="text-lg font-semibold text-white mb-2 font-moroccan">Invité {index + 1}</h4>
-                        <div
-                          className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${expandedGuests || fields.length === 1 ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}`}
-                        >
-                          <FormField
-                            control={form.control}
-                            name={`guests.${index}.fullName`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-white">Nom complet</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    className="bg-white/10 text-white border-white/30 focus:ring-purple-400 w-[90%] ml-1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
+                      control={form.control}
+                      name={`guests.${index}`}
+                      render={({ field }) => (
+                        <FormItem className="relative">
+                          <div
+                            className="w-full bg-white/20 text-white border border-white/30 rounded-md p-3 flex justify-between items-center cursor-pointer"
+                            onClick={() => toggleGuestExpansion(index)}
+                          >
+                            <span>Invité {index + 1}</span>
+                            {expandedGuests.includes(index) ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
                             )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`guests.${index}.sex`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-white">Sexe</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="bg-white/10 text-white border-white/30 focus:ring-purple-400  w-[90%] ml-1">
-                                      <SelectValue placeholder="Sélectionnez le sexe" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent className="bg-purple-800 text-white">
-                                    <SelectItem value="male">Homme</SelectItem>
-                                    <SelectItem value="female">Femme</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`guests.${index}.nationality`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-white">Nationalité</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="bg-white/10 text-white border-white/30 focus:ring-purple-400  w-[90%] ml-1">
-                                      <SelectValue placeholder="Sélectionnez votre nationalité" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent className="bg-purple-800 text-white">
-                                    <SelectItem value="Moroccan">Marocaine</SelectItem>
-                                    <SelectItem value="French">Française</SelectItem>
-                                    <SelectItem value="American">Américaine</SelectItem>
-                                    <SelectItem value="Other">Autre</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="identification"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-md md:text-lg text-white font-moroccan">
-                                  Identification (CIN ou Passeport)
-                                </FormLabel>
-                                <FormControl>
-                                  <DropzoneComponent />
-                                </FormControl>
-                                <FormDescription className="text-white/70">
-                                  Veuillez télécharger une copie de votre CIN ou passeport (recto et verso). Taille maximale du
-                                  fichier : 5 Mo par image.
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
+                          </div>
+                          {expandedGuests.includes(index) && (
+                            <Card className="absolute top-full left-0 w-full mt-2 bg-violet-950 backdrop-blur-sm shadow-md rounded-lg overflow-hidden border border-white/30 z-10">
+                              <CardContent className="p-4 space-y-4">
+                                <FormField
+                                  control={form.control}
+                                  name={`guests.${index}.fullName`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-white">Nom complet</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          className="bg-white/10 text-white border-white/30 focus:ring-purple-400 w-full"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`guests.${index}.sex`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-white">Sexe</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger className="bg-white/10 text-white border-white/30 focus:ring-purple-400 w-full">
+                                            <SelectValue placeholder="Sélectionnez le sexe" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent className="bg-purple-800 text-white">
+                                          <SelectItem value="male">Homme</SelectItem>
+                                          <SelectItem value="female">Femme</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`guests.${index}.nationality`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-white">Nationalité</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger className="bg-white/10 text-white border-white/30 focus:ring-purple-400 w-full">
+                                            <SelectValue placeholder="Sélectionnez votre nationalité" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent className="bg-purple-800 text-white">
+                                          <SelectItem value="Moroccan">Marocaine</SelectItem>
+                                          <SelectItem value="French">Française</SelectItem>
+                                          <SelectItem value="American">Américaine</SelectItem>
+                                          <SelectItem value="Other">Autre</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="identification"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-md md:text-lg text-white font-moroccan">
+                                        Identification (CIN ou Passeport)
+                                      </FormLabel>
+                                      <FormControl>
+                                        <DropzoneComponent />
+                                      </FormControl>
+                                      <FormDescription className="text-white/70">
+                                        Veuillez télécharger une copie de votre CIN ou passeport (recto et verso).
+                                        Taille maximale du fichier : 5 Mo par image.
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </CardContent>
+                            </Card>
+                          )}
+                        </FormItem>
+                      )}
+                    />
                   ))}
                 </div>
               </div>
 
               <Separator className="my-8 bg-white/30" />
-
-              
 
               {requiresMarriageCertificate && (
                 <FormField
@@ -291,7 +283,9 @@ export function AirbnbMoroccoForm2() {
                 name="termsAccepted"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel className="text-md md:text-lg font-semibold text-white font-moroccan">Conditions générales</FormLabel>
+                    <FormLabel className="text-md md:text-lg font-semibold text-white font-moroccan">
+                      Conditions générales
+                    </FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -317,7 +311,7 @@ export function AirbnbMoroccoForm2() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />   
+              />
 
               <FormField
                 control={form.control}
@@ -338,7 +332,6 @@ export function AirbnbMoroccoForm2() {
                 )}
               />
 
-              
               <div className="flex items-center justify-center">
                 <Button
                   type="submit"

@@ -1,9 +1,10 @@
-import { AirbnbMoroccoForm2 } from "@/components/airbnb-morocco";
+import { AirbnbMoroccoForm2 } from "@/components/airbnb-morocco"
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-purple-600 to-indigo-900">
+    <main>
       <AirbnbMoroccoForm2 />
     </main>
   )
 }
+
